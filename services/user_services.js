@@ -14,22 +14,22 @@ const addUser = async(firstName, lastName, email, hashedPassword, role) =>{
     return result.affectedRows === 1;
 }
 
-const getHashedPassword = async(email, role) => {
-    const query = "SELECT password_hash FROM user WHERE email = ? AND role = ?;"
-    let [result] = await pool.execute(query, [email, role]);
+const getHashedPasswordAndRole = async(email) => {
+    const query = "SELECT password_hash, role FROM user WHERE email = ?;"
+    let [result] = await pool.execute(query, [email]);
     if(result.length === 0) return "";
-    return result[0].password_hash;
+    return {hashedPassword: result[0].password_hash, role: result[0].role};
 }
 
-const setLastLoginTime = async(email, role) => {
-    const stmt = "UPDATE user SET last_login_date = CURRENT_TIMESTAMP WHERE email = ? AND role = ?;"
-    let [result] = await pool.execute(stmt, [email, role]);
+const setLastLoginTime = async(email) => {
+    const stmt = "UPDATE user SET last_login_at = CURRENT_TIMESTAMP WHERE email = ?;"
+    let [result] = await pool.execute(stmt, [email]);
     return result.affectedRows === 1;
 }
 
-const getLastLoginTime = async(email, role) => {
-    const query = "SELECT last_login_date FROM user WHERE email = ? AND role = ?;"
-    let [result] = await pool.execute(query, [email, role]);
+const getLastLoginTime = async(email) => {
+    const query = "SELECT last_login_at FROM user WHERE email = ?;"
+    let [result] = await pool.execute(query, [email]);
     if(result.length === 0) return "";
     return result[0].last_login_date;
 }
@@ -37,7 +37,7 @@ const getLastLoginTime = async(email, role) => {
 
 module.exports = {  isUserTableEmpty, 
                     addUser,
-                    getHashedPassword,
+                    getHashedPasswordAndRole,
                     setLastLoginTime,
                     getLastLoginTime
                 }
