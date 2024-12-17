@@ -31,11 +31,27 @@ const getLastLoginTime = async(email) => {
     const query = "SELECT last_login_at FROM user WHERE email = ?;"
     let [result] = await pool.execute(query, [email]);
     if(result.length === 0) return "";
-    return result[0].last_login_date;
+    return result[0].last_login_at;
+}
+
+const isUserExisted = async(email, role, last_login_at) => {
+    const query = `SELECT EXISTS(
+                      SELECT 1 FROM user WHERE email = ? AND role = ? AND last_login_at = CONVERT_TZ(?, '+00:00', 'SYSTEM')
+                   ) AS is_user_found`;
+    const [result] = await pool.execute(query, [email, role, last_login_at]);
+    return result[0].is_user_found === 1;   
+}
+
+const isUserExistedByEmail = async(email) => {
+    const query = `SELECT EXISTS( SELECT 1 FROM user WHERE email = ? ) AS is_user_found;`
+    const [result] = await pool.execute(query, [email]);
+    return result[0].is_user_found === 1;  
 }
 
 
 module.exports = {  isUserTableEmpty, 
+                    isUserExisted,
+                    isUserExistedByEmail,
                     addUser,
                     getHashedPasswordAndRole,
                     setLastLoginTime,
