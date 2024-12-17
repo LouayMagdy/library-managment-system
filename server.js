@@ -5,7 +5,9 @@ const bcrypt = require("bcrypt");
 
 const { pool } = require('./config/db');
 const { isUserTableEmpty, addUser } = require('./services/accountService')
+
 const userRoutes = require('./routes/userRoutes')
+const bookRoutes = require('./routes/bookRoutes')
 
 const {handleError} = require("./middlewares/errorHandler")
 
@@ -17,6 +19,7 @@ app.use(express.json());
 
 // Defining API Routes
 app.use("/user", userRoutes);
+app.use("/book", bookRoutes);
 
 // Setting a middleware for Custom Error Handling
 app.use(handleError);
