@@ -10,7 +10,8 @@ const { addUser,
         setLastLoginTime, 
         getLastLoginTime, 
         isUserExistedByEmail} = require('../services/accountService')
-const {getUserByEmail} = require('../services/userQueryService')
+
+const {getUserByEmail, getOlderNBorrowersThanTimestamp, getNewerNBorrowersThanTimestamp} = require('../services/userQueryService')
 
 const {createCustomError} = require('../errors/customError');
 
@@ -78,4 +79,36 @@ const deleteUserController = async(req, res, next) => {
     }
 }
 
-module.exports = {loginController, addUserController, updateUserController, deleteUserController}
+const getOlderNBorrowers = async (req, res, next) => {
+    try{
+        let pageSize = req.params.pageSize;
+        let timestamp = req.query.timestamp || new Date().toISOString();
+        timestamp = timestamp.replace('T', ' ').replace('Z', '');
+        let borrowers = await getOlderNBorrowersThanTimestamp(pageSize, timestamp)
+        return res.status(200).json({borrowers});
+    } catch(err){
+        console.log(err)
+        return next({})
+    }
+}
+
+const getNewerNBorrowers = async (req, res, next) => {
+    try{
+        let pageSize = req.params.pageSize;
+        let timestamp = req.query.timestamp || new Date().toISOString();
+        timestamp = timestamp.replace('T', ' ').replace('Z', '');
+        let borrowers = await getNewerNBorrowersThanTimestamp(pageSize, timestamp)
+        return res.status(200).json({borrowers});
+    } catch(err){
+        console.log(err)
+        return next({})
+    }
+}
+
+module.exports = {loginController, 
+                  addUserController, 
+                  updateUserController, 
+                  deleteUserController,
+                  getOlderNBorrowers,
+                  getNewerNBorrowers
+                }

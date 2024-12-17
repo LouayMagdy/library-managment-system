@@ -51,7 +51,6 @@ const authUser = async (req, res, next) => {
 }
 
 const authAdmin = async (req, res, next) => {
-    let emailToDelete = req.params.email.toLowerCase();
     let authHeader = req.headers.authorization;
     if(!authHeader || !authHeader.startsWith('Bearer ')) 
         return next(createCustomError("Authentication failed", 401));

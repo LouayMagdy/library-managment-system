@@ -8,4 +8,24 @@ const getUserByEmail = async(email) => {
     return result[0];
 }
 
-module.exports = {getUserByEmail}
+const getOlderNBorrowersThanTimestamp = async(n, timestamp) => {
+    const query = `SELECT first_name, last_name, email, registered_at
+                   FROM user
+                   where role = 'borrower' AND registered_at < CONVERT_TZ(?, '+00:00', 'SYSTEM')
+                   ORDER BY registered_at DESC
+                   LIMIT ?`
+    let [result] = await pool.execute(query, [timestamp, n]);
+    return result;
+}
+
+const getNewerNBorrowersThanTimestamp = async(n, timestamp) => {
+    const query = `SELECT first_name, last_name, email, registered_at
+                   FROM user
+                   where role = 'borrower' AND registered_at > CONVERT_TZ(?, '+00:00', 'SYSTEM')
+                   ORDER BY registered_at DESC
+                   LIMIT ?`
+    let [result] = await pool.execute(query, [timestamp, n]);
+    return result;
+}
+
+module.exports = {getUserByEmail, getOlderNBorrowersThanTimestamp, getNewerNBorrowersThanTimestamp}
