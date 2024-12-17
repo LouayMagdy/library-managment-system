@@ -13,5 +13,14 @@ const isBookExisted = async(isbn) => {
     return result[0].is_book_found === 1;
 }
 
+const updateBook = async(title, author, isbn, quantity, section, bayNum, shelfNum) => {
+    const stmt = `UPDATE book
+                  SET title = ?, author = ?, available_quantity = ?, 
+                  section = ?, bay_number = ?, shelf_number = ?
+                  WHERE isbn = ?;`;
+    await pool.execute(stmt, [title, author, quantity, section, bayNum, shelfNum, isbn]);
+}
+
 module.exports = { addBook, 
+                   updateBook,
                    isBookExisted};
