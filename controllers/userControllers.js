@@ -3,11 +3,19 @@ require('dotenv').config();
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 
-const {addUser, getHashedPasswordAndRole, setLastLoginTime, getLastLoginTime, isUserExistedByEmail} = require('../services/user_services')
+const { addUser, 
+        updateUser, 
+        getHashedPasswordAndRole, 
+        setLastLoginTime, 
+        getLastLoginTime, 
+        isUserExistedByEmail} = require('../services/accountService')
+const {getUserByEmail} = require('../services/userQueryService')
+
 const {createCustomError} = require('../errors/customError');
 
 const loginController = async(req, res, next) => {
-    const { email, password} = req.body;
+    let { email, password} = req.body;
+    email = email.toLowerCase(); // emails are case-insensitive in real life.
     let user = await(getHashedPasswordAndRole(email));
     if(user === "") return next(createCustomError("Authentication failed", 401));
     
@@ -36,5 +44,25 @@ const addUserController = async(req, res, next) => {
     }
 }
 
+const updateUserController = async(req, res, next) => {
+    let {firstName, lastName, email, password} = req.body;
+    email = email.toLowerCase(); // emails are case-insensitive in real life.
+    let originalUserData = await getUserByEmail(email); // guaranteed to exist, since token was verified
+    try{
+        if(password){
+            let arePasswordsMatched = await bcrypt.compare(password, originalUserData.password_hash);
+            password = arePasswordsMatched? originalUserData.password_hash : await bcrypt.hash(password, 10); // 10 is the salt rounds
+        } 
+        else password = originalUserData.password_hash;
+        firstName = firstName || originalUserData.first_name;
+        lastName = lastName || originalUserData.last_name;
+        await updateUser(email, firstName, lastName, password);
+        return res.status(200).json({message: "User Data Updated Successfully!"});
+    } catch(err){
+        console.log(err.message);
+        return next({});
+    }
+}
 
-module.exports = {loginController, addUserController}
+
+module.exports = {loginController, addUserController, updateUserController}

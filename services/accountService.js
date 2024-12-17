@@ -48,11 +48,19 @@ const isUserExistedByEmail = async(email) => {
     return result[0].is_user_found === 1;  
 }
 
+const updateUser = async(email, firstName, lastName, password_hash) => {
+    const stmt = `UPDATE user 
+                  SET first_name = ?, last_name = ?, password_hash = ?
+                  WHERE email = ?;`;
+    const [result] = await pool.execute(stmt, [firstName, lastName, password_hash, email]);
+    return result.affectedRows === 1;
+}
 
 module.exports = {  isUserTableEmpty, 
                     isUserExisted,
                     isUserExistedByEmail,
                     addUser,
+                    updateUser,
                     getHashedPasswordAndRole,
                     setLastLoginTime,
                     getLastLoginTime

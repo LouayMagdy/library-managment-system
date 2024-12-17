@@ -4,7 +4,7 @@ const express = require('express');
 const bcrypt = require("bcrypt");
 
 const { pool } = require('./config/db');
-const { isUserTableEmpty, addUser } = require('./services/user_services')
+const { isUserTableEmpty, addUser } = require('./services/accountService')
 const userRoutes = require('./routes/userRoutes')
 
 const {handleError} = require("./middlewares/errorHandler")

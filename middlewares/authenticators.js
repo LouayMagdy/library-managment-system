@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const { createCustomError } = require('../errors/customError')
-const { isUserExisted } = require('../services/user_services')
+const { isUserExisted } = require('../services/accountService')
 
 const authenticateUserForRegistration = async (req, res, next) => { 
     let authHeader = req.headers.authorization;
@@ -19,6 +19,7 @@ const authenticateUserForRegistration = async (req, res, next) => {
     let token = authHeader.split(' ')[1];
     try{
         let decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        if(decoded.role !== 'admin') return next(createCustomError("Authentication failed", 401));
         let lastLoginTime = decoded.lastLoginTime.replace('T', ' ').replace('Z', '');
         let isValidToken = await isUserExisted(decoded.email, decoded.role, lastLoginTime);
         if(!isValidToken) return next(createCustomError("Authentication failed", 401));
@@ -30,4 +31,23 @@ const authenticateUserForRegistration = async (req, res, next) => {
     }
 }
 
-module.exports = {authenticateUserForRegistration}
+
+const authenticateUser = async (req, res, next) => {
+    let authHeader = req.headers.authorization;
+    if(!authHeader || !authHeader.startsWith('Bearer ')) 
+        return next(createCustomError("Authentication failed", 401));
+    let token = authHeader.split(' ')[1];
+    try{
+        let decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        let lastLoginTime = decoded.lastLoginTime.replace('T', ' ').replace('Z', '');
+        let isValidToken = await isUserExisted(decoded.email, decoded.role, lastLoginTime);
+        if(!isValidToken) return next(createCustomError("Authentication failed", 401));
+        req.body.email = decoded.email; // may be required in some services
+        next();
+    } catch(err){
+        console.log(err.message);
+        return next(createCustomError("Authentication failed", 401));
+    }
+}
+
+module.exports = {authenticateUserForRegistration, authenticateUser}
