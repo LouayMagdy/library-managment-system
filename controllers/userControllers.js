@@ -16,19 +16,24 @@ const {getUserByEmail, getOlderNBorrowersThanTimestamp, getNewerNBorrowersThanTi
 const {createCustomError} = require('../errors/customError');
 
 const loginController = async(req, res, next) => {
-    let { email, password} = req.body;
-    email = email.toLowerCase(); // emails are case-insensitive in real life.
-    let user = await(getHashedPasswordAndRole(email));
-    if(user === "") return next(createCustomError("Authentication failed", 401));
-    
-    let arePasswordsMatched = await bcrypt.compare(password, user.hashedPassword);
-    if(!arePasswordsMatched) return next(createCustomError("Authentication failed", 401));
-    
-    await setLastLoginTime(email);
-    let lastLoginTime = await getLastLoginTime(email);
-    if(lastLoginTime === "") return next({});
-    let token = jwt.sign({email: email, role:user.role, lastLoginTime: lastLoginTime}, process.env.JWT_SECRET_KEY);
-    return res.status(200).json({ token });
+    try{
+        let { email, password} = req.body;
+        email = email.toLowerCase(); // emails are case-insensitive in real life.
+        let user = await(getHashedPasswordAndRole(email));
+        if(user === "") return next(createCustomError("Authentication failed", 401));
+        
+        let arePasswordsMatched = await bcrypt.compare(password, user.hashedPassword);
+        if(!arePasswordsMatched) return next(createCustomError("Authentication failed", 401));
+        
+        await setLastLoginTime(email);
+        let lastLoginTime = await getLastLoginTime(email);
+        if(lastLoginTime === "") return next({});
+        let token = jwt.sign({email: email, role:user.role, lastLoginTime: lastLoginTime}, process.env.JWT_SECRET_KEY);
+        return res.status(200).json({ token });
+    } catch(err){
+        console.log(err.message)
+        return next({});
+    }
 }
 
 const addUserController = async(req, res, next) => {
@@ -47,10 +52,10 @@ const addUserController = async(req, res, next) => {
 }
 
 const updateUserController = async(req, res, next) => {
-    let {firstName, lastName, email, password} = req.body;
-    email = email.toLowerCase(); // emails are case-insensitive in real life.
-    let originalUserData = await getUserByEmail(email); // guaranteed to exist, since token was verified
     try{
+        let {firstName, lastName, email, password} = req.body;
+        email = email.toLowerCase(); // emails are case-insensitive in real life.
+        let originalUserData = await getUserByEmail(email); // guaranteed to exist, since token was verified
         if(password){
             let arePasswordsMatched = await bcrypt.compare(password, originalUserData.password_hash);
             password = arePasswordsMatched? originalUserData.password_hash : await bcrypt.hash(password, 10); // 10 is the salt rounds

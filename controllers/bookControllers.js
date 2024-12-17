@@ -6,7 +6,7 @@ const { addBook,
         updateBook,
         deleteBook,
         isBookExisted} = require('../services/bookManagementService');
-const { getBookByIsbn } = require('../services/bookQueryService');
+const { getBookByIsbn, getNewerNBooksThanTimestamp, getOlderNBooksThanTimestamp} = require('../services/bookQueryService');
 
 
 const addBookController = async(req, res, next) => {
@@ -60,4 +60,36 @@ const deleteBookController = async(req, res, next) =>{
     }
 }
 
-module.exports = {addBookController, updateBookController, deleteBookController};
+const getNewerNBooks = async(req, res, next) => {
+    try{
+        let pageSize = req.params.pageSize;
+        let timestamp = req.query.timestamp || new Date().toISOString();
+        timestamp = timestamp.replace('T', ' ').replace('Z', '');
+        let isbn = req.query.isbn;
+        let title = req.query.title;
+        let author = req.query.author;
+        let books = await getNewerNBooksThanTimestamp(isbn, title, author, timestamp, pageSize);
+        return res.status(200).json({books});
+    } catch(err){
+        console.log(err)
+        return next({})
+    }
+}
+
+const getOlderNBooks = async(req, res, next) => {
+    try{
+        let pageSize = req.params.pageSize;
+        let timestamp = req.query.timestamp || new Date().toISOString();
+        timestamp = timestamp.replace('T', ' ').replace('Z', '');
+        let isbn = req.query.isbn;
+        let title = req.query.title;
+        let author = req.query.author;
+        let books = await getOlderNBooksThanTimestamp(isbn, title, author, timestamp, pageSize);
+        return res.status(200).json({books});
+    } catch(err){
+        console.log(err)
+        return next({})
+    }
+}
+
+module.exports = {addBookController, updateBookController, deleteBookController, getNewerNBooks, getOlderNBooks};

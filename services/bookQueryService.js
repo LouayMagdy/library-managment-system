@@ -1,4 +1,5 @@
 const { pool } = require('../config/db');
+const { BookQueryBuilder } = require('./bookQueryBuilder')
 
 
 const getBookByIsbn = async(isbn) => {
@@ -8,4 +9,49 @@ const getBookByIsbn = async(isbn) => {
     return result;
 }
 
-module.exports = {getBookByIsbn};
+
+const getNewerNBooksThanTimestamp = async(isbn, title, author, import_time, pageSize) => {
+    let builder = new BookQueryBuilder();
+    let isFirst = true;
+    if(isbn){
+        builder.addIsbnCondition(isFirst, isbn)
+        isFirst = false;
+    }
+    if(title){
+        builder.addTitleCondition(isFirst, title)
+        isFirst = false;
+    }
+    if(author){
+        builder.addAuthorCondition(isFirst, author)
+        isFirst = false;
+    }
+    builder.addNewerThanCondtion(isFirst, import_time);
+    builder.addOrderBYandLimit(pageSize);
+
+    let [result] = await pool.execute(builder.query, builder.values);
+    return result;
+} 
+
+const getOlderNBooksThanTimestamp = async(isbn, title, author, import_time, pageSize) => {
+    let builder = new BookQueryBuilder();
+    let isFirst = true;
+    if(isbn){
+        builder.addIsbnCondition(isFirst, isbn)
+        isFirst = false;
+    }
+    if(title){
+        builder.addTitleCondition(isFirst, title)
+        isFirst = false;
+    }
+    if(author){
+        builder.addAuthorCondition(isFirst, author)
+        isFirst = false;
+    }
+    builder.addOlderThanCondtion(isFirst, import_time);
+    builder.addOrderBYandLimit(pageSize);
+
+    let [result] = await pool.execute(builder.query, builder.values);
+    return result;
+} 
+
+module.exports = {getBookByIsbn, getNewerNBooksThanTimestamp, getOlderNBooksThanTimestamp};
