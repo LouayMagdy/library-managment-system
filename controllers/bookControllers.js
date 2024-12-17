@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const {createCustomError} = require('../errors/customError');
 const { addBook, 
         updateBook,
+        deleteBook,
         isBookExisted} = require('../services/bookManagementService');
 const { getBookByIsbn } = require('../services/bookQueryService');
 
@@ -46,4 +47,17 @@ const updateBookController = async(req, res, next) => {
     }
 }
 
-module.exports = {addBookController, updateBookController};
+const deleteBookController = async(req, res, next) =>{
+    try{
+        let isbnToDelete = req.params.isbn;
+        let isBookFound = await isBookExisted(isbnToDelete);
+        if (!isBookFound) return next(createCustomError("Book Not Found!", 404));
+        await deleteBook(isbnToDelete);
+        return res.status(200).json({message: "Book Deleted Successfully!"});
+    } catch(err){
+        console.log(err.message);
+        return next(createCustomError("Conflict! This Book is already borrowed and cannot be deleted!", 409))
+    }
+}
+
+module.exports = {addBookController, updateBookController, deleteBookController};

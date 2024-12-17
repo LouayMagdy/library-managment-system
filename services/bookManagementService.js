@@ -21,6 +21,13 @@ const updateBook = async(title, author, isbn, quantity, section, bayNum, shelfNu
     await pool.execute(stmt, [title, author, quantity, section, bayNum, shelfNum, isbn]);
 }
 
+const deleteBook = async(isbn) => {
+    const stmt = 'DELETE FROM book WHERE isbn = ?';
+    await pool.execute(stmt, [isbn]);
+}
+
 module.exports = { addBook, 
                    updateBook,
-                   isBookExisted};
+                   deleteBook,
+                   isBookExisted,
+                };
