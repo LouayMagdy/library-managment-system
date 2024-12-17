@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 
 const { addUser, 
         updateUser, 
+        deleteUser,
         getHashedPasswordAndRole, 
         setLastLoginTime, 
         getLastLoginTime, 
@@ -64,5 +65,17 @@ const updateUserController = async(req, res, next) => {
     }
 }
 
+const deleteUserController = async(req, res, next) => {
+    try{
+        let emailToDelete = req.params.email.toLowerCase();
+        let isUserFound = await isUserExistedByEmail(emailToDelete);
+        if (!isUserFound) return next(createCustomError("User Not Found!", 404));
+        await deleteUser(emailToDelete);
+        return res.status(200).json({message: "User Deleted Successfully!"});
+    } catch(err){
+        console.log(err.message);
+        return next(createCustomError("Conflict! This User has not returned some books and cannot be deleted!", 409))
+    }
+}
 
-module.exports = {loginController, addUserController, updateUserController}
+module.exports = {loginController, addUserController, updateUserController, deleteUserController}

@@ -56,11 +56,17 @@ const updateUser = async(email, firstName, lastName, password_hash) => {
     return result.affectedRows === 1;
 }
 
+const deleteUser = async(email) => {
+    const stmt = 'DELETE FROM user WHERE email = ?';
+    await pool.execute(stmt, [email]);
+}
+
 module.exports = {  isUserTableEmpty, 
                     isUserExisted,
                     isUserExistedByEmail,
                     addUser,
                     updateUser,
+                    deleteUser,
                     getHashedPasswordAndRole,
                     setLastLoginTime,
                     getLastLoginTime

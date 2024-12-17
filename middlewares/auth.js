@@ -4,7 +4,7 @@ require('dotenv').config();
 const { createCustomError } = require('../errors/customError')
 const { isUserExisted } = require('../services/accountService')
 
-const authenticateUserForRegistration = async (req, res, next) => { 
+const authUserForRegistration = async (req, res, next) => { 
     let authHeader = req.headers.authorization;
     // Checking if the user is normal user: (no token sent).
     let isNormalUser = !authHeader;
@@ -27,12 +27,12 @@ const authenticateUserForRegistration = async (req, res, next) => {
         next();
     } catch (err){
         console.log(err.message);
-        return next(createCustomError("Authentication failed", 401));
+        return next({});
     }
 }
 
 
-const authenticateUser = async (req, res, next) => {
+const authUser = async (req, res, next) => {
     let authHeader = req.headers.authorization;
     if(!authHeader || !authHeader.startsWith('Bearer ')) 
         return next(createCustomError("Authentication failed", 401));
@@ -46,8 +46,28 @@ const authenticateUser = async (req, res, next) => {
         next();
     } catch(err){
         console.log(err.message);
-        return next(createCustomError("Authentication failed", 401));
+        return next({});
     }
 }
 
-module.exports = {authenticateUserForRegistration, authenticateUser}
+const authAdmin = async (req, res, next) => {
+    let emailToDelete = req.params.email.toLowerCase();
+    let authHeader = req.headers.authorization;
+    if(!authHeader || !authHeader.startsWith('Bearer ')) 
+        return next(createCustomError("Authentication failed", 401));
+    let token = authHeader.split(' ')[1];
+    try{
+        let decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        let lastLoginTime = decoded.lastLoginTime.replace('T', ' ').replace('Z', '');
+        let isValidToken = await isUserExisted(decoded.email, decoded.role, lastLoginTime);
+        if(!isValidToken) return next(createCustomError("Authentication failed", 401));
+        if(decoded.role !== 'admin') return next(createCustomError("Forbidden! You cannot access this resource", 403));
+        next();
+    } catch(err){
+        console.log(err.message);
+        return next({});
+    }
+}
+
+
+module.exports = {authUserForRegistration, authUser, authAdmin}
