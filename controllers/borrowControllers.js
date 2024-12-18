@@ -4,7 +4,8 @@ const { addToBorrowTable,
         isBookBorrowedBy,
         setReturnDateOfBorrowedBook,
         incrementBookQuatity,
-        getBorrowersDetails
+        getBorrowersDetails,
+        getBorrowerBooks
     } = require("../services/borrowServices/borrowService")
 
 const { isBookExisted } = require('../services/bookServices/bookManagementService')
@@ -76,4 +77,16 @@ const getBookStatus = async(req, res, next) => {
     }
 }
 
-module.exports = {generateNewPassKey, checkoutBook, returnBook, getBookStatus}
+const getBorrowedBooks = async(req, res, next) => {
+    try{
+        let {email} = req.body
+        email = email.toLowerCase(); // just to be valid if it is not extracted from jwt in future routes
+        let borrowedBooks = await getBorrowerBooks(email);
+        return res.status(200).json({borrowedBooks})
+    }catch(err){
+        console.log(err.message);
+        next({})
+    }
+}
+
+module.exports = {generateNewPassKey, checkoutBook, returnBook, getBookStatus, getBorrowedBooks}

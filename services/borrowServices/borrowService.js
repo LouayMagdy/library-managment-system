@@ -40,10 +40,20 @@ const getBorrowersDetails = async(book_isbn) => {
     return result;      
 }
 
+const getBorrowerBooks = async(borrower_mail) => {
+    let query = `SELECT book.title, book.author, book.isbn, borrow.borrow_date, borrow.due_date
+                 FROM book JOIN borrow ON book.isbn = borrow.book_isbn
+                 WHERE borrow.borrower_mail = ? AND borrow.return_date IS NULL
+                 ORDER BY borrow.borrow_date DESC`;
+    let [result] = await pool.execute(query, [borrower_mail]);
+    return result;  
+}
+
 module.exports = {addToBorrowTable, 
                   decrementBookQuatity, 
                   isBookBorrowedBy,
                   setReturnDateOfBorrowedBook,
                   incrementBookQuatity,
-                  getBorrowersDetails
+                  getBorrowersDetails,
+                  getBorrowerBooks
                 }
