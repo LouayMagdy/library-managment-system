@@ -31,9 +31,19 @@ const incrementBookQuatity = async(book_isbn) => {
     await pool.execute(stmt, [book_isbn]);
 }
 
+const getBorrowersDetails = async(book_isbn) => {
+    let query = `SELECT user.first_name, user.last_Name, user.email, borrow.borrow_date, borrow.due_date
+                 FROM user JOIN borrow on user.email = borrow.borrower_mail
+                 WHERE borrow.return_date IS NULL AND borrow.book_isbn = ?
+                 ORDER BY borrow.borrow_date DESC`;
+    let [result] = await pool.execute(query, [book_isbn]);
+    return result;      
+}
+
 module.exports = {addToBorrowTable, 
                   decrementBookQuatity, 
                   isBookBorrowedBy,
                   setReturnDateOfBorrowedBook,
-                  incrementBookQuatity
+                  incrementBookQuatity,
+                  getBorrowersDetails
                 }

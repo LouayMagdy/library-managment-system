@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { authBorrower, authLibrarian} = require('../middlewares/auth')
-const { generateNewPassKey, checkoutBook, returnBook } = require("../controllers/borrowControllers")
+const { generateNewPassKey, checkoutBook, returnBook, getBookStatus } = require("../controllers/borrowControllers")
 
 // Generates a one time token of 6 digits so that we ensure that
 // the borrower is not stored as a borrower/returner of some book
@@ -14,4 +14,6 @@ router.post("/checkout", authLibrarian, checkoutBook);
 router.put("/return", authLibrarian, returnBook);
 
 
+// tracking book status route
+router.get("/bookStatus/:isbn", authLibrarian, getBookStatus)
 module.exports = router;

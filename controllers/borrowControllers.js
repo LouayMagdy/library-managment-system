@@ -3,8 +3,12 @@ const { addToBorrowTable,
         decrementBookQuatity, 
         isBookBorrowedBy,
         setReturnDateOfBorrowedBook,
-        incrementBookQuatity
+        incrementBookQuatity,
+        getBorrowersDetails
     } = require("../services/borrowServices/borrowService")
+
+const { isBookExisted } = require('../services/bookServices/bookManagementService')
+const { getBookAvailableQuantity } = require('../services/bookServices/bookQueryService')
 
 const {createCustomError} = require('../errors/customError');
 
@@ -40,7 +44,6 @@ const checkoutBook = async(req, res, next) => {
     }
 }
 
-
 const returnBook = async(req, res, next) => {
     try{
         let {borrower_mail, book_isbn, passkey} = req.body;
@@ -59,4 +62,18 @@ const returnBook = async(req, res, next) => {
     }
 }
 
-module.exports = {generateNewPassKey, checkoutBook, returnBook}
+const getBookStatus = async(req, res, next) => {
+    try{
+        let isbn = req.params.isbn || ''
+        let isBookFound = await isBookExisted(isbn);
+        if(!isBookFound) return next(createCustomError("Book not Found!", 400));
+        let availableQuantity = await getBookAvailableQuantity(isbn);
+        let borrowerDetails = await getBorrowersDetails(isbn);
+        return res.status(200).json({availableQuantity, borrowerDetails})
+    }catch(err){
+        console.log(err.message);
+        next({})
+    }
+}
+
+module.exports = {generateNewPassKey, checkoutBook, returnBook, getBookStatus}

@@ -54,4 +54,10 @@ const getOlderNBooksThanTimestamp = async(isbn, title, author, import_time, page
     return result;
 } 
 
-module.exports = {getBookByIsbn, getNewerNBooksThanTimestamp, getOlderNBooksThanTimestamp};
+const getBookAvailableQuantity = async(isbn) => {
+    let query = 'SELECT available_quantity FROM book WHERE isbn = ?'
+    let [result] = await pool.execute(query, [isbn])
+    return result[0].available_quantity;
+}
+
+module.exports = {getBookByIsbn, getNewerNBooksThanTimestamp, getOlderNBooksThanTimestamp, getBookAvailableQuantity};
