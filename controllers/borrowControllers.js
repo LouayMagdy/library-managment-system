@@ -1,5 +1,5 @@
 const { deleteCurrentPassKey, addPassKey, getPassKey } = require("../services/borrowServices/passkeyService")
-const { addToBorrowTable } = require("../services/borrowServices/borrowService")
+const { addToBorrowTable, decrementBookQuatity } = require("../services/borrowServices/borrowService")
 
 const {createCustomError} = require('../errors/customError');
 
@@ -19,12 +19,13 @@ const generateNewPassKey = async(req, res, next) => {
 
 const checkoutBook = async(req, res, next) => {
     try{
-        let {borrower_mail, book, passkey} = req.body;
+        let {borrower_mail, book_isbn, due_date, passkey} = req.body;
         let fetchedPassKey = await getPassKey(borrower_mail);
         if(passkey !== fetchedPassKey) return next(createCustomError("Borrower PassKey is Invalid!", 400));
-        await addToBorrowTable(borrower_mail, book.isbn, book.due_date.replace('T', ' ').replace('Z', ''));
+        await addToBorrowTable(borrower_mail, book_isbn, due_date.replace('T', ' ').replace('Z', ''));
+        await decrementBookQuatity(book_isbn);
         await deleteCurrentPassKey(borrower_mail); // to avoid misuse by librarians
-        return res.status(201).json({message: `Book: ${book.isbn} registered for borrowing by ${borrower_mail} until ${book.due_date}`});
+        return res.status(201).json({message: `Book: ${book_isbn} registered for borrowing by ${borrower_mail} until ${due_date}`});
     }catch(err){
         console.log(err.message);
         next({})

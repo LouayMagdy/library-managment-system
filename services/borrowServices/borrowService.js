@@ -5,4 +5,10 @@ const addToBorrowTable = async(borrower_mail, book_isbn, due_date) => {
     await pool.execute(stmt, [borrower_mail, book_isbn, due_date])
 }
 
-module.exports = {addToBorrowTable}
+const decrementBookQuatity = async(book_isbn) => {
+    let stmt = `UPDATE book SET available_quantity = available_quantity - 1
+                WHERE isbn = ?`
+    await pool.execute(stmt, [book_isbn]);
+}
+
+module.exports = {addToBorrowTable, decrementBookQuatity}
