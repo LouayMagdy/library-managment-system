@@ -9,9 +9,11 @@ const { addUser,
         getHashedPasswordAndRole, 
         setLastLoginTime, 
         getLastLoginTime, 
-        isUserExistedByEmail} = require('../services/accountService')
+        isUserExistedByEmail} = require('../services/userServices/accountService')
 
-const {getUserByEmail, getOlderNBorrowersThanTimestamp, getNewerNBorrowersThanTimestamp} = require('../services/userQueryService')
+const {getUserByEmail, 
+       getOlderNBorrowersThanTimestamp, 
+       getNewerNBorrowersThanTimestamp} = require('../services/userServices/userQueryService')
 
 const {createCustomError} = require('../errors/customError');
 
@@ -40,6 +42,8 @@ const addUserController = async(req, res, next) => {
     try{
         let {firstName, lastName, email, password, role} = req.body;
         email = email.toLowerCase(); // emails are case-insensitive in real life.
+        if(!(/^[A-Za-z\s\-]+$/.test(firstName)) ) return next(createCustomError("First Name Not valid", 400)); 
+        if(!(/^[A-Za-z\s\-]+$/.test(lastName)) ) return next(createCustomError("Last Name Not valid", 400)); 
         const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
         let isDuplicate = await isUserExistedByEmail(email);
         if(isDuplicate) return next(createCustomError("User Already Registered!", 409)); 
@@ -63,6 +67,8 @@ const updateUserController = async(req, res, next) => {
         else password = originalUserData.password_hash;
         firstName = firstName || originalUserData.first_name;
         lastName = lastName || originalUserData.last_name;
+        if(!(/^[A-Za-z\s\-]+$/.test(firstName)) ) return next(createCustomError("First Name Not valid", 400)); 
+        if(!(/^[A-Za-z\s\-]+$/.test(lastName)) ) return next(createCustomError("Last Name Not valid", 400));
         await updateUser(email, firstName, lastName, password);
         return res.status(200).json({message: "User Data Updated Successfully!"});
     } catch(err){

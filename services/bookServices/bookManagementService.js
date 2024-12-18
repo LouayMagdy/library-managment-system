@@ -1,4 +1,4 @@
-const { pool } = require('../config/db');
+const { pool } = require('../../config/db');
 
 
 const addBook = async(title, author, isbn, quantity, section, bayNum, shelfNum) => {

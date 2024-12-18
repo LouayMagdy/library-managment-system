@@ -4,7 +4,7 @@ const express = require('express');
 const bcrypt = require("bcrypt");
 
 const { pool } = require('./config/db');
-const { isUserTableEmpty, addUser } = require('./services/accountService')
+const { isAdminFound, addUser } = require('./services/userServices/accountService')
 
 const userRoutes = require('./routes/userRoutes')
 const bookRoutes = require('./routes/bookRoutes')
@@ -32,8 +32,8 @@ app.use(handleError);
 // Creating a method to setup the server
 const startServer = async () => {
     // 1. Checking if there is no users added yet, and add the Admin if so. 
-    const isThereNoAdmins = await isUserTableEmpty();
-    if(isThereNoAdmins){
+    const isThereAdmin = await isAdminFound();
+    if(!isThereAdmin){
         const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10); // 10 is the salt rounds
         let result = await addUser(process.env.ADMIN_Name, 
                                     process.env.ADMIN_Name, 

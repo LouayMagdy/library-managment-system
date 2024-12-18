@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const { createCustomError } = require('../errors/customError')
-const { isUserExisted } = require('../services/accountService')
+const { isUserExisted } = require('../services/userServices/accountService')
 
 const authUserForRegistration = async (req, res, next) => { 
     let authHeader = req.headers.authorization;

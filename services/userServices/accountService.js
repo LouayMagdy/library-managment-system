@@ -1,10 +1,10 @@
-const { pool } = require('../config/db');
+const { pool } = require('../../config/db');
 
 
-const isUserTableEmpty = async () => {
-    const query = "SELECT EXISTS(SELECT 1 FROM user LIMIT 1) AS is_not_empty;"
+const isAdminFound = async () => {
+    const query = "SELECT EXISTS(SELECT 1 FROM user WHERE role = 'admin') AS is_admin_found;"
     const [result] = await pool.execute(query);
-    return result[0].is_not_empty === 0;
+    return result[0].is_admin_found === 1;
 }
 
 const addUser = async(firstName, lastName, email, hashedPassword, role) =>{
@@ -61,7 +61,7 @@ const deleteUser = async(email) => {
     await pool.execute(stmt, [email]);
 }
 
-module.exports = {  isUserTableEmpty, 
+module.exports = {  isAdminFound, 
                     isUserExisted,
                     isUserExistedByEmail,
                     addUser,
