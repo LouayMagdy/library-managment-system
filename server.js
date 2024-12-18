@@ -8,6 +8,7 @@ const { isAdminFound, addUser } = require('./services/userServices/accountServic
 
 const userRoutes = require('./routes/userRoutes')
 const bookRoutes = require('./routes/bookRoutes')
+const borrowRoutes = require('./routes/borrowRoutes');
 
 const {handleError} = require("./middlewares/errorHandler")
 
@@ -20,6 +21,7 @@ app.use(express.json());
 // Defining API Routes
 app.use("/user", userRoutes);
 app.use("/book", bookRoutes);
+app.use("/borrow", borrowRoutes);
 
 app.use((req, res, next) => {
     res.status(404).json({error: 'Route not found'});
