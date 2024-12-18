@@ -49,11 +49,65 @@ const getBorrowerBooks = async(borrower_mail) => {
     return result;  
 }
 
+const getOlderNBooksThanTimestamp = async(pageSize, timestamp) => {
+    let query = `SELECT book.title, book.author, book.isbn, borrow.borrow_date, borrow.due_date, 
+                 user.first_name, user.last_Name, user.email
+                 FROM book JOIN borrow ON book.isbn = borrow.book_isbn
+                 JOIN user on borrow.borrower_mail = user.email
+                 WHERE borrow.return_date IS NULL AND borrow.borrow_date < CONVERT_TZ(?, '+00:00', 'SYSTEM')
+                 ORDER BY borrow.borrow_date DESC
+                 LIMIT ?`
+    let [result] = await pool.execute(query, [timestamp, pageSize]);
+    return result;  
+}
+
+const getNewerNBooksThanTimestamp = async(pageSize, timestamp) => {
+    let query = `SELECT book.title, book.author, book.isbn, borrow.borrow_date, borrow.due_date,
+                 user.first_name, user.last_Name, user.email
+                 FROM book JOIN borrow ON book.isbn = borrow.book_isbn
+                 JOIN user on borrow.borrower_mail = user.email
+                 WHERE borrow.return_date IS NULL AND borrow.borrow_date > CONVERT_TZ(?, '+00:00', 'SYSTEM')
+                 ORDER BY borrow.borrow_date DESC
+                 LIMIT ?`
+    let [result] = await pool.execute(query, [timestamp, pageSize]);
+    return result;  
+}
+
+const getOlderNOverDueBooksThanTimestamp = async(pageSize, timestamp) => {
+    let query = `SELECT book.title, book.author, book.isbn, borrow.borrow_date, borrow.due_date,
+                 user.first_name, user.last_Name, user.email
+                 FROM book JOIN borrow ON book.isbn = borrow.book_isbn
+                 JOIN user on borrow.borrower_mail = user.email
+                 WHERE borrow.return_date IS NULL AND borrow.borrow_date < CONVERT_TZ(?, '+00:00', 'SYSTEM')
+                 AND CURRENT_TIMESTAMP > borrow.due_date
+                 ORDER BY borrow.borrow_date DESC
+                 LIMIT ?`
+    let [result] = await pool.execute(query, [timestamp, pageSize]);
+    return result;  
+}
+
+const getNewerNOverDueBooksThanTimestamp = async(pageSize, timestamp) => {
+    let query = `SELECT book.title, book.author, book.isbn, borrow.borrow_date, borrow.due_date,
+                 user.first_name, user.last_Name, user.email
+                 FROM book JOIN borrow ON book.isbn = borrow.book_isbn
+                 JOIN user on borrow.borrower_mail = user.email
+                 WHERE borrow.return_date IS NULL AND borrow.borrow_date > CONVERT_TZ(?, '+00:00', 'SYSTEM')
+                 AND CURRENT_TIMESTAMP > borrow.due_date
+                 ORDER BY borrow.borrow_date DESC
+                 LIMIT ?`
+    let [result] = await pool.execute(query, [timestamp, pageSize]);
+    return result;  
+}
+
 module.exports = {addToBorrowTable, 
                   decrementBookQuatity, 
                   isBookBorrowedBy,
                   setReturnDateOfBorrowedBook,
                   incrementBookQuatity,
                   getBorrowersDetails,
-                  getBorrowerBooks
+                  getBorrowerBooks,
+                  getOlderNBooksThanTimestamp,
+                  getOlderNOverDueBooksThanTimestamp,
+                  getNewerNBooksThanTimestamp,
+                  getNewerNOverDueBooksThanTimestamp
                 }

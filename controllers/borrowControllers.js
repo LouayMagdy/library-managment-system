@@ -5,7 +5,11 @@ const { addToBorrowTable,
         setReturnDateOfBorrowedBook,
         incrementBookQuatity,
         getBorrowersDetails,
-        getBorrowerBooks
+        getBorrowerBooks,
+        getNewerNBooksThanTimestamp,
+        getNewerNOverDueBooksThanTimestamp,
+        getOlderNBooksThanTimestamp,
+        getOlderNOverDueBooksThanTimestamp
     } = require("../services/borrowServices/borrowService")
 
 const { isBookExisted } = require('../services/bookServices/bookManagementService')
@@ -89,4 +93,42 @@ const getBorrowedBooks = async(req, res, next) => {
     }
 }
 
-module.exports = {generateNewPassKey, checkoutBook, returnBook, getBookStatus, getBorrowedBooks}
+const getOlderNBorrowedBooks = async(req, res, next) => {
+    try{
+        let pageSize = req.params.pageSize;
+        let overdue = req.query.overdue === "true";
+        let timestamp = req.query.timestamp || new Date().toISOString();
+        timestamp = timestamp.replace('T', ' ').replace('Z', '');
+        let borrowedBooks = [];
+        if(!overdue) borrowedBooks = await getOlderNBooksThanTimestamp(pageSize, timestamp)
+        else borrowedBooks = await getOlderNOverDueBooksThanTimestamp(pageSize, timestamp)
+        return res.status(200).json({borrowedBooks})
+    } catch(err){
+        console.log(err.message);
+        next({})
+    }
+}
+
+const getNewerNBorrowedBooks = async(req, res, next) => {
+    try{
+        let pageSize = req.params.pageSize;
+        let overdue = req.query.overdue === "true";
+        let timestamp = req.query.timestamp || new Date().toISOString();
+        timestamp = timestamp.replace('T', ' ').replace('Z', '');
+        let borrowedBooks = [];
+        if(!overdue) borrowedBooks = await getNewerNBooksThanTimestamp(pageSize, timestamp)
+        else borrowedBooks = await getNewerNOverDueBooksThanTimestamp(pageSize, timestamp)
+        return res.status(200).json({borrowedBooks})
+    } catch(err){
+        console.log(err.message);
+        next({})
+    }
+}
+
+module.exports = {generateNewPassKey, 
+                  checkoutBook, 
+                  returnBook, 
+                  getBookStatus, 
+                  getBorrowedBooks,
+                  getOlderNBorrowedBooks,
+                  getNewerNBorrowedBooks}
