@@ -1,5 +1,5 @@
 const { deleteCurrentPassKey, addPassKey, getPassKey } = require("../services/borrowServices/passkeyService")
-const { addToBorrowTable, decrementBookQuatity } = require("../services/borrowServices/borrowService")
+const { addToBorrowTable, decrementBookQuatity, isBookBorrowedBy } = require("../services/borrowServices/borrowService")
 
 const {createCustomError} = require('../errors/customError');
 
@@ -22,6 +22,9 @@ const checkoutBook = async(req, res, next) => {
         let {borrower_mail, book_isbn, due_date, passkey} = req.body;
         let fetchedPassKey = await getPassKey(borrower_mail);
         if(passkey !== fetchedPassKey) return next(createCustomError("Borrower PassKey is Invalid!", 400));
+        let isBookAlreadyBorrowedByUser = await isBookBorrowedBy(borrower_mail, book_isbn);
+        if(isBookAlreadyBorrowedByUser) 
+            return next(createCustomError(`Book: ${book_isbn} already borrowed by ${borrower_mail} until ${due_date}`, 400));
         await addToBorrowTable(borrower_mail, book_isbn, due_date.replace('T', ' ').replace('Z', ''));
         await decrementBookQuatity(book_isbn);
         await deleteCurrentPassKey(borrower_mail); // to avoid misuse by librarians

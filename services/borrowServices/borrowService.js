@@ -11,4 +11,14 @@ const decrementBookQuatity = async(book_isbn) => {
     await pool.execute(stmt, [book_isbn]);
 }
 
-module.exports = {addToBorrowTable, decrementBookQuatity}
+const isBookBorrowedBy = async(borrower_mail, book_isbn) => {
+    const query = `SELECT EXISTS(SELECT 1 FROM borrow 
+                                 WHERE borrower_mail = ? AND book_isbn = ? AND return_date IS NULL)
+                   AS is_book_borrowed`
+    let [result] = await pool.execute(query, [borrower_mail, book_isbn]);
+    return result[0].is_book_borrowed === 1;
+}
+
+// const setReturnDateOfBorrowedBook = async(borrower_mail, book_isbn, )
+
+module.exports = {addToBorrowTable, decrementBookQuatity, isBookBorrowedBy}
